@@ -3,8 +3,6 @@
 #include <z_syscall.h>
 #include <dlfcn.h>
 
-#define STACK_SIZE 0x21000
-
 void main(void *ptr) {
     loader_payload_t *payload = (loader_payload_t *)ptr;
 
