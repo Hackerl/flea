@@ -1,19 +1,19 @@
 #include "payload.h"
 #include <z_log.h>
-#include <z_syscall.h>
 #include <dlfcn.h>
 
 void main(void *ptr) {
     loader_payload_t *payload = (loader_payload_t *)ptr;
+    snapshot(&payload->regs);
 
     LOG("load library: %s", payload->library);
 
     if (!payload->dlopen_mode(payload->library, RTLD_LAZY)) {
         LOG("load library failed");
-        z_exit(-1);
+        quit(-1);
     }
 
-    z_exit(0);
+    quit(0);
 }
 
 #if __i386__ || __x86_64__
