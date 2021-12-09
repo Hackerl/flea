@@ -43,7 +43,7 @@ bool CInjector::open() {
         mExecutors.push_back(executor.release());
     }
 
-    LOG_INFO("attach process success");
+    LOG_INFO("attach process %d success", mPID);
 
     return true;
 }
