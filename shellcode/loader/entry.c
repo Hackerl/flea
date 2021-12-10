@@ -4,7 +4,7 @@
 
 void main(void *ptr) {
     loader_payload_t *payload = (loader_payload_t *)ptr;
-    snapshot(&payload->regs);
+    snapshot(&payload->context);
 
     LOG("load library: %s", payload->library);
 

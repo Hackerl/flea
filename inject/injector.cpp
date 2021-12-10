@@ -78,8 +78,8 @@ int CInjector::inject(const std::string &library) {
 
     LOG_INFO("memory allocated: %p", result);
 
-    if (!executor->getRegisters(payload.regs)) {
-        LOG_ERROR("get registers failed");
+    if (!executor->getRegisters(payload.context.regs) || !executor->getFPRegisters(payload.context.fp_regs)) {
+        LOG_ERROR("get executor context failed");
         return -1;
     }
 
