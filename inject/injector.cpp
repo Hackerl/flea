@@ -14,6 +14,12 @@ constexpr auto ALLOC_SIZE = 0x21000;
 constexpr auto LIBC_IMAGE = "libc-";
 constexpr auto DLOPEN_SYMBOL = "__libc_dlopen_mode";
 
+constexpr auto FORBIDDEN_STACK_FRAME = {
+        "malloc",
+        "free",
+        "dlopen"
+};
+
 CInjector::CInjector(pid_t pid) {
     mPID = pid;
     mPageSize = sysconf(_SC_PAGESIZE);
@@ -39,6 +45,26 @@ bool CInjector::open() {
 
         if (!executor->attach())
             return false;
+
+        std::list<CFrame> stackTrace;
+
+        if (!executor->getStackTrace(stackTrace)) {
+            LOG_ERROR("get executor stack trace failed");
+            executor->detach();
+            return false;
+        }
+
+        auto it = std::find_if(stackTrace.begin(), stackTrace.end(), [](const auto &frame) {
+            return std::find_if(FORBIDDEN_STACK_FRAME.begin(), FORBIDDEN_STACK_FRAME.end(), [&](const auto &name) {
+                return frame.name.find(name) != std::string::npos;
+            }) != FORBIDDEN_STACK_FRAME.end();
+        });
+
+        if (it != stackTrace.end()) {
+            LOG_ERROR("forbidden stack frame: %s", it->name.c_str());
+            executor->detach();
+            return false;
+        }
 
         mExecutors.push_back(executor.release());
     }

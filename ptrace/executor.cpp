@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <sys/wait.h>
 #include <syscall.h>
+#include <libunwind-ptrace.h>
 
 #ifdef __i386__
 
@@ -293,6 +294,52 @@ bool CExecutor::call(const unsigned char *shellcode, unsigned int length, void *
         return false;
 
     return sig != SIGSEGV;
+}
+
+bool CExecutor::getStackTrace(std::list<CFrame> &stackTrace) {
+    unw_addr_space_t as = unw_create_addr_space(&_UPT_accessors, 0);
+
+    if (!as)
+        return false;
+
+    void *ui = _UPT_create(mPID);
+
+    if (!ui) {
+        unw_destroy_addr_space(as);
+        return false;
+    }
+
+    unw_cursor_t c = {};
+
+    if (unw_init_remote(&c, as, ui) < 0) {
+        _UPT_destroy(ui);
+        unw_destroy_addr_space(as);
+        return false;
+    }
+
+    do {
+        unw_word_t offset = 0;
+        char buffer[512] = {};
+
+        if (unw_get_proc_name(&c, buffer, sizeof(buffer), &offset) < 0) {
+            _UPT_destroy(ui);
+            unw_destroy_addr_space(as);
+            return false;
+        }
+
+        stackTrace.push_back({buffer, offset});
+
+        if (stackTrace.size() > 64) {
+            _UPT_destroy(ui);
+            unw_destroy_addr_space(as);
+            return false;
+        }
+    } while (unw_step(&c) > 0);
+
+    _UPT_destroy(ui);
+    unw_destroy_addr_space(as);
+
+    return true;
 }
 
 bool CExecutor::getExecBase(void **base) const {
