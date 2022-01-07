@@ -167,7 +167,7 @@ bool CInjector::getDlopenAddress(void **address) const {
         return false;
     }
 
-    unsigned long baseAddress = 0;
+    unsigned long base = 0;
 
     if (reader.get_type() != ET_EXEC) {
         std::vector<ELFIO::segment *> loads;
@@ -187,7 +187,7 @@ bool CInjector::getDlopenAddress(void **address) const {
                     return i->get_virtual_address() < j->get_virtual_address();
                 });
 
-        baseAddress = processMapping.start - ((*minElement)->get_virtual_address() & ~(mPageSize - 1));
+        base = processMapping.start - ((*minElement)->get_virtual_address() & ~(mPageSize - 1));
     }
 
     ELFIO::Elf64_Addr dlopenAddress = 0;
@@ -208,7 +208,7 @@ bool CInjector::getDlopenAddress(void **address) const {
         }
 
         if (name == DLOPEN_SYMBOL) {
-            dlopenAddress = baseAddress + value;
+            dlopenAddress = base + value;
             break;
         }
     }

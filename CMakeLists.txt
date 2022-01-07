@@ -21,6 +21,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ELFIO)
 
+FetchContent_Declare(
+        zero
+        GIT_REPOSITORY https://github.com/Hackerl/zero
+        GIT_TAG master
+)
+
+FetchContent_MakeAvailable(zero)
+
 set(LIBUNWIND_BINARY ${CMAKE_BINARY_DIR}/libunwind-binary)
 set(LIBUNWIND_INCLUDE_DIR ${LIBUNWIND_BINARY}/include)
 set(LIBUNWIND_LIBRARY_DIR ${LIBUNWIND_BINARY}/lib)
@@ -52,8 +60,6 @@ add_library(libunwind-ptrace STATIC IMPORTED)
 
 set_target_properties(libunwind-ptrace PROPERTIES IMPORTED_LOCATION ${LIBUNWIND_LIBRARY_DIR}/libunwind-ptrace.a)
 target_link_libraries(libunwind-ptrace INTERFACE libunwind-generic)
-
-add_subdirectory(zero)
 
 add_executable(flea main.cpp ptrace/tracee.cpp ptrace/executor.cpp inject/injector.cpp)
 target_link_libraries(flea zero elfio libunwind-ptrace $<$<BOOL:${STATIC_BUILD}>:-static-pie>)
