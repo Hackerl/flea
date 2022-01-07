@@ -65,7 +65,7 @@ Flea is a program that allows to inject shared library into a remote process.
 
 ### Caveats
 
-**dlopen** is a non-reentrant function, may stop the process forever cause by deadlock, flea has used stack trace to reduce risk.
+```dlopen``` is a non-reentrant function, may stop the process forever cause by deadlock, flea has used stack trace to reduce risk.
 
 ### Built With
 
